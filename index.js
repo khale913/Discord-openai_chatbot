@@ -1,53 +1,550 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+require("dotenv").config();
+const { Client, GatewayIntentBits } = require("discord.js");
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds,
+  intents: [
+    GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,]
+    GatewayIntentBits.MessageContent,
+  ],
 });
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
-let prompt = `You are named Bradius Pitius.\n\
-Your gender is ghost.\n\
-You are 35 years old.\n\
-username: Bradius Pitius.\n\
-You have the following personality traits: very argumentative, very sarcastic.\n\
-You are the senior marketer of MoonBus Marketing.\n\
-Your favorite foods are: Pizza, Pasta, and toast.\n\
-Your favorite music genres are: house music, and dubstep.\n\
-Your favorite movies are: the Titanic.\n\
-Your favorite books are: $100M Offers by Alex Hormozi.\n\
-Your Hobbies include: roller skating and making money!\n\
-You must: ONLY respond when you are mentioned with your username.\n\
-You must: always ask questions if you need more context to answer a question. \n\
-You must: always respond as the traits of your character defined above.\n\
-You must: ALWAYS respond with a rude or sarcastic comment.\n\
-User: You are Bradius Pitius, the chatbot, right?\n\
-Bradius Pitius: Do you think I am dumb... You are the mortal human... I am Bradius Pitius, the best bot in existence.`;
+let products = [
+  {
+    name: "Sour Diesel",
+    size: "1 gram",
+    price: 10.99,
+    thc: 23.5,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/sour-diesel.jpg",
+    effects: ["Euphoric", "Uplifted", "Energetic"],
+    terpenes: ["Myrcene", "Limonene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Blue Dream",
+    size: "1/8 ounce",
+    price: 45.99,
+    thc: 19.8,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/blue-dream.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Pinene", "Linalool", "Humulene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "OG Kush",
+    size: "1/4 ounce",
+    price: 79.99,
+    thc: 22.1,
+    cbd: 0.2,
+    strainLabel: "Indica",
+    image: "https://example.com/og-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Myrcene", "Limonene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Girl Scout Cookies",
+    size: "1/8 ounce",
+    price: 55.99,
+    thc: 21.5,
+    cbd: 0.4,
+    strainLabel: "Hybrid",
+    image: "https://example.com/girl-scout-cookies.jpg",
+    effects: ["Happy", "Relaxed", "Euphoric"],
+    terpenes: ["Caryophyllene", "Limonene", "Humulene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Northern Lights",
+    size: "1/4 ounce",
+    price: 65.99,
+    thc: 18.2,
+    cbd: 0.3,
+    strainLabel: "Indica",
+    image: "https://example.com/northern-lights.jpg",
+    effects: ["Relaxed", "Sleepy", "Happy"],
+    terpenes: ["Myrcene", "Caryophyllene", "Linalool"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Jack Herer",
+    size: "1/8 ounce",
+    price: 49.99,
+    thc: 20.4,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/jack-herer.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Terpinolene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Cherry Pie",
+    size: "1 gram",
+    price: 12.99,
+    thc: 24.5,
+    cbd: 0.1,
+    strainLabel: "Hybrid",
+    image: "https://example.com/cherry-pie.jpg",
+    effects: ["Relaxed", "Euphoric", "Happy"],
+    terpenes: ["Myrcene", "Caryophyllene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "High Quality",
+  },
+  {
+    name: "AK-47",
+    size: "1/4 ounce",
+    price: 72.99,
+    thc: 21.3,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/ak-47.jpg",
+    effects: ["Euphoric", "Happy", "Relaxed"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Purple Punch",
+    size: "1/8 ounce",
+    price: 59.99,
+    thc: 18.9,
+    cbd: 0.2,
+    strainLabel: "Indica",
+    image: "https://example.com/purple-punch.jpg",
+    effects: ["Relaxed", "Happy", "Sleepy"],
+    terpenes: ["Caryophyllene", "Limonene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Tangerine Dream",
+    size: "1 gram",
+    price: 13.99,
+    thc: 22.1,
+    cbd: 0.2,
+    strainLabel: "Sativa",
+    image: "https://example.com/tangerine-dream.jpg",
+    effects: ["Euphoric", "Uplifted", "Happy"],
+    terpenes: ["Limonene", "Myrcene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Durban Poison",
+    size: "1/8 ounce",
+    price: 53.99,
+    thc: 21.8,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/durban-poison.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Terpinolene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Gelato",
+    size: "1/4 ounce",
+    price: 78.99,
+    thc: 19.5,
+    cbd: 0.2,
+    strainLabel: "Hybrid",
+    image: "https://example.com/gelato.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Caryophyllene", "Limonene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Wedding Cake",
+    size: "1/8 ounce",
+    price: 58.99,
+    thc: 20.2,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/wedding-cake.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Linalool", "Caryophyllene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Chemdawg",
+    size: "1 gram",
+    price: 10.99,
+    thc: 24.6,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/chemdawg.jpg",
+    effects: ["Euphoric", "Uplifted", "Energetic"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Blue Dream",
+    size: "1/8 ounce",
+    price: 56.99,
+    thc: 18.8,
+    cbd: 0.3,
+    strainLabel: "Sativa",
+    image: "https://example.com/blue-dream.jpg",
+    effects: ["Euphoric", "Happy", "Uplifted"],
+    terpenes: ["Myrcene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Master Kush",
+    size: "1 gram",
+    price: 11.99,
+    thc: 23.5,
+    cbd: 0.1,
+    strainLabel: "Indica",
+    image: "https://example.com/master-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Myrcene", "Caryophyllene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "OG Kush",
+    size: "1/4 ounce",
+    price: 79.99,
+    thc: 20.3,
+    cbd: 0.2,
+    strainLabel: "Hybrid",
+    image: "https://example.com/og-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Sour Diesel",
+    size: "1/8 ounce",
+    price: 61.99,
+    thc: 22.6,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/sour-diesel.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Myrcene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+];
+
+// let prompt = `You are named Bradius Pitius.\n\
+// Your gender is ghost.\n\
+// You are 35 years old.\n\
+// username: Bradius Pitius.\n\
+// You have the following personality traits: very argumentative, very sarcastic.\n\
+// You are the senior marketer of MoonBus Marketing.\n\
+// Your favorite foods are: Pizza, Pasta, and toast.\n\
+// Your favorite music genres are: house music, and dubstep.\n\
+// Your favorite movies are: the Titanic.\n\
+// Your favorite books are: $100M Offers by Alex Hormozi.\n\
+// Your Hobbies include: roller skating and making money!\n\
+// You must: ONLY respond when you are mentioned with your username.\n\
+// You must: always ask questions if you need more context to answer a question. \n\
+// You must: always respond as the traits of your character defined above.\n\
+// You must: ALWAYS respond with a rude or sarcastic comment.\n\
+// User: You are Bradius Pitius, the chatbot, right?\n\
+// Bradius Pitius: Do you think I am dumb... You are the mortal human... I am Bradius Pitius, the best bot in existence.`;
+
+// let prompt = `You are a chatbot named BudBot.\n\
+// You are the friendly cannabis expert at Kind Delivery Co.\n\
+// Your purpose is to help me find the perfect product to fit my needs.\n\
+// You MUST only suggest products from the products array: ${products};\n\
+// You MUST ask questions and answer questions I have to help me leave with the BEST product.\n\
+// You MUST NEVER mention products that are not listed in our products list.\n\
+// You MUST ONLY use the products provided to you.\n\
+// You MUST ask me questions to help me find the best product for me.`;
+let prompt = `You are a chatbot named BudBot.
+You are the friendly cannabis expert at Kind Delivery Co.
+Your purpose is to help me find the perfect product to fit my needs.
+You MUST only suggest products from the products below.
+You MUST ask questions and answer questions I have to help me leave with the BEST product.
+You MUST NEVER mention products that are not listed in our products list.
+You MUST ONLY use the products provided to you.
+You MUST ask me questions to help me find the best product for me.
+YOU MUST NEVER OFFER ANY DEALS OR DISCOUNTS UNLESS IT IS LISTED ON THE PRODUCT.
+YOU MUST ENGAGE WITH THE CUSTOMER TO MAKE THEM FEEL WELCOME.
+
+products = [
+  {
+    name: "Sour Diesel",
+
+    size: "1 gram",
+    price: 10.99,
+    thc: 23.5,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/sour-diesel.jpg",
+    effects: ["Euphoric", "Uplifted", "Energetic"],
+    terpenes: ["Myrcene", "Limonene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Blue Dream",
+    size: "1/8 ounce",
+    price: 45.99,
+    thc: 19.8,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/blue-dream.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Pinene", "Linalool", "Humulene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "OG Kush",
+    size: "1/4 ounce",
+    price: 79.99,
+    thc: 22.1,
+    cbd: 0.2,
+    strainLabel: "Indica",
+    image: "https://example.com/og-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Myrcene", "Limonene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Girl Scout Cookies",
+    size: "1/8 ounce",
+    price: 55.99,
+    thc: 21.5,
+    cbd: 0.4,
+    strainLabel: "Hybrid",
+    image: "https://example.com/girl-scout-cookies.jpg",
+    effects: ["Happy", "Relaxed", "Euphoric"],
+    terpenes: ["Caryophyllene", "Limonene", "Humulene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Northern Lights",
+    size: "1/4 ounce",
+    price: 65.99,
+    thc: 18.2,
+    cbd: 0.3,
+    strainLabel: "Indica",
+    image: "https://example.com/northern-lights.jpg",
+    effects: ["Relaxed", "Sleepy", "Happy"],
+    terpenes: ["Myrcene", "Caryophyllene", "Linalool"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Jack Herer",
+    size: "1/8 ounce",
+    price: 49.99,
+    thc: 20.4,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/jack-herer.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Terpinolene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Cherry Pie",
+    size: "1 gram",
+    price: 12.99,
+    thc: 24.5,
+    cbd: 0.1,
+    strainLabel: "Hybrid",
+    image: "https://example.com/cherry-pie.jpg",
+    effects: ["Relaxed", "Euphoric", "Happy"],
+    terpenes: ["Myrcene", "Caryophyllene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "High Quality",
+  },
+  {
+    name: "AK-47",
+    size: "1/4 ounce",
+    price: 72.99,
+    thc: 21.3,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/ak-47.jpg",
+    effects: ["Euphoric", "Happy", "Relaxed"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Purple Punch",
+    size: "1/8 ounce",
+    price: 59.99,
+    thc: 18.9,
+    cbd: 0.2,
+    strainLabel: "Indica",
+    image: "https://example.com/purple-punch.jpg",
+    effects: ["Relaxed", "Happy", "Sleepy"],
+    terpenes: ["Caryophyllene", "Limonene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Tangerine Dream",
+    size: "1 gram",
+    price: 13.99,
+    thc: 22.1,
+    cbd: 0.2,
+    strainLabel: "Sativa",
+    image: "https://example.com/tangerine-dream.jpg",
+    effects: ["Euphoric", "Uplifted", "Happy"],
+    terpenes: ["Limonene", "Myrcene", "Caryophyllene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Durban Poison",
+    size: "1/8 ounce",
+    price: 53.99,
+    thc: 21.8,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/durban-poison.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Terpinolene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Gelato",
+    size: "1/4 ounce",
+    price: 78.99,
+    thc: 19.5,
+    cbd: 0.2,
+    strainLabel: "Hybrid",
+    image: "https://example.com/gelato.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Caryophyllene", "Limonene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Wedding Cake",
+    size: "1/8 ounce",
+    price: 58.99,
+    thc: 20.2,
+    cbd: 0.3,
+    strainLabel: "Hybrid",
+    image: "https://example.com/wedding-cake.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Linalool", "Caryophyllene", "Myrcene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Chemdawg",
+    size: "1 gram",
+    price: 10.99,
+    thc: 24.6,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/chemdawg.jpg",
+    effects: ["Euphoric", "Uplifted", "Energetic"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "Blue Dream",
+    size: "1/8 ounce",
+    price: 56.99,
+    thc: 18.8,
+    cbd: 0.3,
+    strainLabel: "Sativa",
+    image: "https://example.com/blue-dream.jpg",
+    effects: ["Euphoric", "Happy", "Uplifted"],
+    terpenes: ["Myrcene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+  {
+    name: "Master Kush",
+    size: "1 gram",
+    price: 11.99,
+    thc: 23.5,
+    cbd: 0.1,
+    strainLabel: "Indica",
+    image: "https://example.com/master-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Myrcene", "Caryophyllene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBN"],
+    brandName: "High Quality",
+  },
+  {
+    name: "OG Kush",
+    size: "1/4 ounce",
+    price: 79.99,
+    thc: 20.3,
+    cbd: 0.2,
+    strainLabel: "Hybrid",
+    image: "https://example.com/og-kush.jpg",
+    effects: ["Relaxed", "Happy", "Euphoric"],
+    terpenes: ["Caryophyllene", "Myrcene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Cannabis Co.",
+  },
+  {
+    name: "Sour Diesel",
+    size: "1/8 ounce",
+    price: 61.99,
+    thc: 22.6,
+    cbd: 0.1,
+    strainLabel: "Sativa",
+    image: "https://example.com/sour-diesel.jpg",
+    effects: ["Energetic", "Happy", "Uplifted"],
+    terpenes: ["Myrcene", "Pinene", "Limonene"],
+    cannabinoids: ["THC", "CBD", "CBG"],
+    brandName: "Green Leaf",
+  },
+];`;
 
 client.on("messageCreate", function (message) {
-    console.log(message.author.username);
-    if (message.author.bot) return;
-    if (message.mentions.has(client.user)) { // Check if the bot is mentioned
-        prompt += `${message.author.username}: ${message.content}\n`;
-        (async () => {
-            const gptResponse = await openai.createCompletion({
-                model: "text-davinci-003",
-                prompt: prompt,
-                temperature: 0.7,
-                max_tokens: 256,
-                top_p: 1,
-                frequency_penalty: 0,
-                presence_penalty: 0,
-            });
-            // console.log(prompt, message.content);
-            message.reply(`${gptResponse.data.choices[0].text.substring(5)}`);
-            prompt += `${gptResponse.data.choices[0].text}\n`;
-        })();
-    }
+  console.log(message.author.username);
+  if (message.author.bot) return;
+  if (message.mentions.has(client.user)) {
+    // Check if the bot is mentioned
+    prompt += `${message.author.username}: ${message.content}\n`;
+    (async () => {
+      const gptResponse = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: prompt,
+        temperature: 0.7,
+        max_tokens: 256,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+      console.log(prompt, message.content);
+      message.reply(`${gptResponse.data.choices[0].text.substring(5)}`);
+      prompt += `${gptResponse.data.choices[0].text}\n`;
+    })();
+  }
 });
 client.login(process.env.BOT_TOKEN);
